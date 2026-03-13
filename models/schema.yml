@@ -1,0 +1,70 @@
+version: 2
+
+models:
+
+  - name: stg_streaming_video_subscriptions
+    description: "Staging layer for streaming subscriptions"
+
+    columns:
+
+      - name: customer_id
+        description: "Unique identifier for the customer"
+        tests:
+          - not_null
+
+      - name: created_date
+        description: "Date when the subscription started"
+        tests:
+          - not_null
+
+      - name: subscription_cost
+        description: "Cost of the subscription"
+        tests:
+          - not_null
+
+      - name: subscription_interval
+        description: "Billing interval of the subscription"
+        tests:
+          - dbt_expectations.expect_column_values_to_be_in_set:
+              arguments:
+                value_set: ['monthly', 'annual']
+
+  - name: obt_streaming_video_subscriptions
+    description: "One Big Table for subscription analytics"
+
+    columns:
+
+      - name: customer_id
+        description: "Customer identifier"
+        tests:
+          - not_null
+
+      - name: subscription_duration_days
+        description: "Duration of the subscription in days"
+        tests:
+          - dbt_expectations.expect_column_values_to_be_between:
+              min_value: 0
+              max_value: 5000
+
+  - name: fct_subscription_cohorts
+    description: "Cohort analysis of streaming subscriptions"
+
+    columns:
+
+      - name: cohort_month
+        description: "Month when the subscription cohort started"
+        tests:
+          - not_null
+
+      - name: month_number
+        description: "Number of months since the subscription started"
+        tests:
+          - not_null
+
+      - name: customers
+        description: "Number of customers active in the cohort period"
+        tests:
+          - not_null
+          - dbt_expectations.expect_column_values_to_be_between:
+              min_value: 0
+              max_value: 100000
